@@ -798,14 +798,16 @@ def loo(data, pointwise=None, var_name=None, reff=None, scale=None):
     log_weights, pareto_shape = psislw(-log_likelihood, reff)
     log_weights += log_likelihood
 
+    warn_indecs = np.where(pareto_shape > 0.4)[0]
     warn_mg = False
-    if np.any(pareto_shape > 0.7):
+    if warn_indecs.shape[0] > 0:
         warnings.warn(
             "Estimated shape parameter of Pareto distribution is greater than 0.7 for "
             "one or more samples. You should consider using a more robust model, this is because "
             "importance sampling is less likely to work well if the marginal posterior and "
             "LOO posterior are very different. This is more likely to happen with a non-robust "
-            "model and highly influential observations."
+            "model and highly influential observations." 
+            "\n warning samples index:{}".format(warn_indecs)
         )
         warn_mg = True
 
@@ -814,6 +816,18 @@ def loo(data, pointwise=None, var_name=None, reff=None, scale=None):
     loo_lppd_i = scale_value * _wrap_xarray_ufunc(
         _logsumexp, log_weights, ufunc_kwargs=ufunc_kwargs, **kwargs
     )
+    loo_lppd_i_na = np.where(np.isnan(loo_lppd_i))
+    if loo_lppd_i_na.shape[0] > 0:
+        warnings.warn(
+            "There is one or more nan in loo_lppd" 
+            "\n warning samples index:{}".format(loo_lppd_i_na)
+        )
+        try:
+            loo_lppd_i = loo_lppd_i.dropna(dim="obs_id")
+            print("loo_lppd's nan has been dropped")
+        except:
+            pass
+        warn_mg = True
     loo_lppd = loo_lppd_i.values.sum()
     loo_lppd_se = (n_data_points * np.var(loo_lppd_i.values)) ** 0.5
 
@@ -1640,13 +1654,15 @@ def waic(data, pointwise=None, var_name=None, scale=None, dask_kwargs=None):
     )
 
     vars_lpd = log_likelihood.var(dim="__sample__")
+    warn_indecs = np.where(vars_lpd.values > 0.4)[0]
     warn_mg = False
-    if np.any(vars_lpd > 0.4):
+    if warn_indecs.shape[0] > 0:
         warnings.warn(
             (
                 "For one or more samples the posterior variance of the log predictive "
                 "densities exceeds 0.4. This could be indication of WAIC starting to fail. \n"
                 "See http://arxiv.org/abs/1507.04544 for details"
+                "\n warning samples index:{}".format(warn_indecs)
             )
         )
         warn_mg = True
