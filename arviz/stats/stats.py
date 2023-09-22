@@ -816,7 +816,7 @@ def loo(data, pointwise=None, var_name=None, reff=None, scale=None):
     loo_lppd_i = scale_value * _wrap_xarray_ufunc(
         _logsumexp, log_weights, ufunc_kwargs=ufunc_kwargs, **kwargs
     )
-    loo_lppd_i_na = np.where(np.isnan(loo_lppd_i))
+    loo_lppd_i_na = np.where(np.isnan(loo_lppd_i))[0]
     if loo_lppd_i_na.shape[0] > 0:
         warnings.warn(
             "There is one or more nan in loo_lppd" 
