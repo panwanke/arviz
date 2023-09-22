@@ -807,7 +807,8 @@ def loo(data, pointwise=None, var_name=None, reff=None, scale=None):
             "importance sampling is less likely to work well if the marginal posterior and "
             "LOO posterior are very different. This is more likely to happen with a non-robust "
             "model and highly influential observations." 
-            "\n warning samples index:{}".format(warn_indecs)
+            f"\n warning samples index:{', '.join(str(i) for i in warn_indecs)}."
+            
         )
         warn_mg = True
 
@@ -820,7 +821,8 @@ def loo(data, pointwise=None, var_name=None, reff=None, scale=None):
     if loo_lppd_i_na.shape[0] > 0:
         warnings.warn(
             "There is one or more nan in loo_lppd" 
-            "\n warning samples index:{}".format(loo_lppd_i_na)
+            f"\n warning samples index:{', '.join(str(i) for i in loo_lppd_i_na)}."
+
         )
         try:
             loo_lppd_i = loo_lppd_i.dropna(dim="obs_id")
@@ -1662,7 +1664,8 @@ def waic(data, pointwise=None, var_name=None, scale=None, dask_kwargs=None):
                 "For one or more samples the posterior variance of the log predictive "
                 "densities exceeds 0.4. This could be indication of WAIC starting to fail. \n"
                 "See http://arxiv.org/abs/1507.04544 for details"
-                "\n warning samples index:{}".format(warn_indecs)
+                f"\n warning samples index:{', '.join(str(i) for i in warn_indecs)}."
+                
             )
         )
         warn_mg = True
